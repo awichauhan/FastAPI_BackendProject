@@ -8,6 +8,19 @@ products = [
               Product(id = 2,name ="mac", description ="apple_mac",price= 100, quantity= 2)
 ]
 
+#every time app is started, it should check if DB table is empty and then load the data to the DB
+def init_db():
+    db = SessionLocal()
+    count = db.query(database_models.Product).count  #checking if table is empty
+    if count == 0:
+        for product in products:  #converting Pydantic model using model_dump(); getting dictionary and then unpack it using **
+            db.add(database_models.Product(**product.model_dump())) #product is pydantic (iterator on products) and Product is DB model
+        db.commit()
+
+init_db()
+
+#model_dump() is serialization method by which dictionary is returned; to only get key-value pair we need **object.model_dump()
+
 app = FastAPI()
 
 database_models.Base.metadata.create_all(bind=engine)  #asking app to create a table in the database of postgres server
